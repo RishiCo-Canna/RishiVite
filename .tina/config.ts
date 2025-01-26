@@ -1,24 +1,22 @@
 import { defineConfig } from "tinacms";
 
-// Configuration for local development and GitHub integration
-export default defineConfig({
-  // GitHub configuration
-  branch: "main",  // Use main branch
-  clientId: process.env.TINA_CLIENT_ID,  // TinaCMS Client ID
-  token: process.env.GITHUB_TOKEN,      // GitHub Token for authentication
+// Define the base URL for the API
+const apiURL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5000/api/tina'
+  : '/api/tina';
 
+export default defineConfig({
+  // Build configuration
   build: {
     outputFolder: "admin",
     publicFolder: "public",
     basePath: "",
   },
 
-  // Configure API endpoint
-  apiURL: process.env.NODE_ENV === 'development' 
-    ? 'http://0.0.0.0:5000/api/tina/gql'
-    : '/api/tina/gql',
+  // API Configuration
+  contentApiUrlOverride: `${apiURL}/gql`,
 
-  // Media configuration
+  // Media Management
   media: {
     tina: {
       publicFolder: "public",
@@ -26,7 +24,7 @@ export default defineConfig({
     },
   },
 
-  // Content configuration
+  // Content Schema
   schema: {
     collections: [
       {
@@ -56,6 +54,38 @@ export default defineConfig({
           },
         ],
       },
+      {
+        name: "page",
+        label: "Pages",
+        path: "content/pages",
+        format: "mdx",
+        fields: [
+          {
+            type: "string",
+            name: "title",
+            label: "Title",
+            isTitle: true,
+            required: true,
+          },
+          {
+            type: "string",
+            name: "description",
+            label: "Description",
+          },
+          {
+            type: "rich-text",
+            name: "body",
+            label: "Body",
+            isBody: true,
+          },
+        ],
+      },
     ],
   },
+
+  // Force local mode for development
+  local: true,
+  branch: "main",  // Use main branch
+  clientId: process.env.TINA_CLIENT_ID,  // TinaCMS Client ID
+  token: process.env.GITHUB_TOKEN,      // GitHub Token for authentication
 });

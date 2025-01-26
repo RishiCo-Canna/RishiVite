@@ -12,9 +12,16 @@ export function registerRoutes(app: Express): Server {
   // Serve the admin interface
   app.use("/admin", express.static(path.resolve(process.cwd(), "admin")));
 
-  // Mock Tina GraphQL API for local development
-  app.all('/api/tina/gql', (req, res) => {
-    res.json({ data: { node: null } });
+  // Mock TinaCMS GraphQL API endpoint for development
+  app.post('/api/tina/gql', (req, res) => {
+    res.json({ 
+      data: { 
+        node: null,
+        getCollection: {
+          documents: []
+        }
+      } 
+    });
   });
 
   // Blog posts API
@@ -40,29 +47,18 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Serve admin interface for all admin routes
-  app.get(["/admin", "/admin/*"], (req, res, next) => {
-    const adminIndexPath = path.resolve(process.cwd(), "admin/index.html");
+  // Always serve admin/index.html for /admin routes
+  app.get(["/admin", "/admin/*"], (req, res) => {
+    const adminIndexPath = path.resolve(process.cwd(), "admin", "index.html");
     if (fs.existsSync(adminIndexPath)) {
       res.sendFile(adminIndexPath);
     } else {
-      next(); // Let the static middleware handle it
+      res.status(404).send("Admin interface not built. Run `npm run build:admin` first.");
     }
   });
 
-  // Always return index.html for client routes
-  app.get("*", (req, res, next) => {
-    if (!req.url.startsWith("/api")) {
-      const clientIndexPath = path.resolve(process.cwd(), "client/index.html");
-      if (fs.existsSync(clientIndexPath)) {
-        res.sendFile(clientIndexPath);
-      } else {
-        next();
-      }
-    } else {
-      next();
-    }
-  });
+  // Create the HTTP server
+  const httpServer = createServer(app);
 
-  return createServer(app);
+  return httpServer;
 }
