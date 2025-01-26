@@ -1,17 +1,6 @@
-
 import { defineConfig } from "tinacms";
 
 export default defineConfig({
-  branch: "", // Empty for local development
-  clientId: process.env.TINA_CLIENT_ID || "dummy-development-id",
-  token: process.env.TINA_TOKEN || "dummy-development-token",
-  build: {
-    outputFolder: "public/admin",
-    publicFolder: "public",
-    basePath: "admin",
-  },
-  // Enable local mode for development
-  local: true,
   schema: {
     collections: [
       {
@@ -43,4 +32,10 @@ export default defineConfig({
       },
     ],
   },
+  build: {
+    publicFolder: "public",
+    outputFolder: "public/admin",
+    basePath: "admin",
+  },
+  contentApiUrlOverride: '/api/tina/gql', 
 });

@@ -20,6 +20,7 @@ async function init() {
     // Set required environment variables
     process.env.TINA_PUBLIC_IS_LOCAL = "true";
     process.env.PUBLIC_URL = "http://localhost:5000";
+    process.env.NEXT_PUBLIC_TINA_CLIENT_ID = process.env.TINA_CLIENT_ID;
 
     console.log("Building Tina admin interface...");
     await build({
@@ -59,6 +60,7 @@ async function init() {
         publicFolder: "public",
         basePath: "admin",
       },
+      contentApiUrlOverride: '/api/tina/gql',
       local: true,
     });
 

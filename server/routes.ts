@@ -52,6 +52,12 @@ export function registerRoutes(app: Express): Server {
   // Serve static files from public directory
   app.use(express.static(path.resolve(process.cwd(), "public")));
 
+  // Mock Tina GraphQL API for local development
+  app.all('/api/tina/gql', (req, res) => {
+    // For now, just return a success response
+    res.json({ data: { node: null } });
+  });
+
   // Handle SPA routes by serving index.html
   app.get(["/admin", "/admin/*"], (req, res) => {
     res.sendFile(path.resolve(process.cwd(), "public/admin/index.html"));
