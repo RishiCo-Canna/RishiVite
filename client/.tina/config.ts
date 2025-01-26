@@ -20,6 +20,7 @@ export default defineConfig({
         name: "post",
         label: "Posts",
         path: "content/posts",
+        format: "mdx",
         fields: [
           {
             type: "string",
@@ -33,6 +34,24 @@ export default defineConfig({
             name: "body",
             label: "Body",
             isBody: true,
+            templates: [
+              {
+                name: "Image",
+                label: "Image",
+                fields: [
+                  {
+                    name: "src",
+                    label: "Image Source",
+                    type: "image",
+                  },
+                  {
+                    name: "alt",
+                    label: "Alt Text",
+                    type: "string",
+                  },
+                ],
+              },
+            ],
           },
           {
             type: "datetime",

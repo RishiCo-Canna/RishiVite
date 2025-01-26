@@ -6,6 +6,9 @@ type Post = {
   title: string;
   date: string;
   body: string;
+  _sys: {
+    relativePath: string;
+  };
 };
 
 export default function Blog() {
@@ -35,8 +38,8 @@ export default function Blog() {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Blog Posts</h1>
         <div className="space-y-6">
-          {posts?.map((post, i) => (
-            <Card key={i}>
+          {posts?.map((post) => (
+            <Card key={post._sys.relativePath}>
               <CardHeader>
                 <CardTitle>{post.title}</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -45,7 +48,7 @@ export default function Blog() {
               </CardHeader>
               <CardContent>
                 <div
-                  className="prose"
+                  className="prose dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: post.body }}
                 />
               </CardContent>
