@@ -35,22 +35,24 @@ export function registerRoutes(app: Express): Server {
 
   // Handle admin routes
   if (process.env.NODE_ENV === 'development') {
-    // In development, proxy all admin requests to TinaCMS server
-    app.use(['/admin', '/admin/*'], createProxyMiddleware({
+    // Create proxy for TinaCMS admin
+    const adminProxy = createProxyMiddleware({
       target: 'http://localhost:5001',
       changeOrigin: true,
       ws: true,
-      logLevel: 'debug'
-    }));
+      onProxyReq: (proxyReq, req, res) => {
+        // Log proxy requests for debugging
+        console.log(`[Proxy] ${req.method} ${req.url} -> http://localhost:5001${req.url}`);
+      },
+    });
+
+    // Mount proxy middleware
+    app.use('/admin', adminProxy);
   } else {
-    // In production, serve the static admin files
-    app.get(['/admin', '/admin/*'], (req, res) => {
-      const adminIndexPath = path.join(process.cwd(), 'public', 'admin', 'index.html');
-      if (fs.existsSync(adminIndexPath)) {
-        res.sendFile(adminIndexPath);
-      } else {
-        res.status(404).send('Admin interface not available. Please build the admin interface first.');
-      }
+    // Serve static admin files in production
+    app.use('/admin', express.static(path.join(process.cwd(), 'public', 'admin')));
+    app.get('/admin/*', (req, res) => {
+      res.sendFile(path.join(process.cwd(), 'public', 'admin', 'index.html'));
     });
   }
 
