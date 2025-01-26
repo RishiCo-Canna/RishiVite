@@ -13,12 +13,8 @@ import tinaConfig from "./lib/tina";
 
 const cms = new TinaCMS({
   ...tinaConfig,
-  sidebar: {
-    hidden: !window.location.pathname.startsWith('/admin'),
-  },
-  toolbar: {
-    hidden: !window.location.pathname.startsWith('/admin'),
-  },
+  enabled: process.env.NODE_ENV === 'development',
+  sidebar: false,
 });
 
 function Router() {
@@ -30,9 +26,9 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/blog" component={Blog} />
           <Route path="/admin-dashboard" component={Admin} />
-          <Route path="/admin/*">
-            {(params) => {
-              // The Tina admin UI will handle this route
+          <Route path="/admin">
+            {() => {
+              window.location.href = "/admin/index.html";
               return null;
             }}
           </Route>

@@ -45,7 +45,6 @@ export function registerRoutes(app: Express): Server {
         proxy: true
       },
       function (accessToken: any, refreshToken: any, profile: any, done: any) {
-        // For testing, we'll just pass the profile through
         return done(null, profile);
       }
     )
@@ -96,6 +95,43 @@ export function registerRoutes(app: Express): Server {
         authenticated: false, 
         message: "Not authenticated" 
       });
+    }
+  });
+
+  // Tina CMS local API routes
+  app.post("/api/tina/gql", async (req, res) => {
+    try {
+      const postsDir = path.join(process.cwd(), "content/posts");
+      const files = await fs.readdir(postsDir);
+      const posts = await Promise.all(
+        files.map(async (file) => {
+          const content = await fs.readFile(
+            path.join(postsDir, file),
+            "utf-8"
+          );
+          const { data, content: mdContent } = matter(content);
+
+          return {
+            ...data,
+            body: mdContent,
+            _sys: {
+              relativePath: file,
+            },
+          };
+        })
+      );
+      res.json({
+        data: {
+          post: {
+            edges: posts.map(post => ({
+              node: post
+            }))
+          }
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch posts" });
     }
   });
 

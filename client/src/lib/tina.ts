@@ -19,12 +19,6 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
-  // Configure admin UI
-  admin: {
-    auth: {
-      useLocalAuth: true,
-    },
-  },
   schema: {
     collections: [
       {
