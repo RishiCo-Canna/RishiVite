@@ -13,7 +13,7 @@ type Post = {
 
 export default function Blog() {
   const { data: posts, isLoading } = useQuery<Post[]>({
-    queryKey: ["/api/posts"],
+    queryKey: [import.meta.env.PROD ? "/data/posts.json" : "/api/posts"],
   });
 
   if (isLoading) {
