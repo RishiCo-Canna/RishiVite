@@ -78,11 +78,12 @@ export function registerRoutes(app: Express): Server {
       passport.authenticate("github", authOptions)(req, res, next);
     },
     function (req, res) {
-      res.redirect("/auth/test");
+      // Redirect to the admin dashboard instead of showing raw JSON
+      res.redirect("/admin-dashboard");
     }
   );
 
-  // Test verification endpoint
+  // Test verification endpoint - keep this for the admin page to verify auth status
   app.get("/auth/test", (req, res) => {
     if (req.isAuthenticated()) {
       res.json({ 
