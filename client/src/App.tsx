@@ -11,11 +11,7 @@ import Footer from "@/components/layout/footer";
 import { TinaProvider, TinaCMS } from "tinacms";
 import tinaConfig from "./lib/tina";
 
-const cms = new TinaCMS({
-  ...tinaConfig,
-  enabled: true,
-  sidebar: false,
-});
+const cms = new TinaCMS(tinaConfig);
 
 function Router() {
   return (
@@ -28,8 +24,7 @@ function Router() {
           <Route path="/admin-dashboard" component={Admin} />
           <Route path="/admin">
             {() => {
-              // Ensure the admin UI is built and served from the correct path
-              window.location.replace("/admin/index.html");
+              window.location.href = "/admin";
               return null;
             }}
           </Route>
