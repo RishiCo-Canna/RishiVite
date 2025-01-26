@@ -1,26 +1,22 @@
 import { defineConfig } from "tinacms";
 
 export default defineConfig({
-  branch: "",  // Empty for local development
-  clientId: process.env.TINA_CLIENT_ID || "",
-  token: process.env.TINA_TOKEN || "",
   build: {
     outputFolder: "admin",
     publicFolder: "public",
-    basePath: "",
   },
-  media: {
-    tina: {
-      mediaRoot: "uploads",
-      publicFolder: "public",
-    },
-  },
-  contentApiUrlOverride: "/api/tina/gql",
+  // Explicitly set local mode
+  local: true,
+  contentApiUrlOverride: null,
+  // Disable cloud features
+  clientId: null,
+  token: null,
+  branch: "",
   schema: {
     collections: [
       {
         name: "post",
-        label: "Blog Posts",
+        label: "Posts",
         path: "content/posts",
         format: "mdx",
         fields: [
@@ -46,5 +42,5 @@ export default defineConfig({
         ],
       },
     ],
-  }
+  },
 });

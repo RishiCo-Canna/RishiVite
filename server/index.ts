@@ -53,9 +53,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Change port to 3000 to avoid conflict with Tina admin server
+  // Use port 3000 to avoid conflicts with Tina CMS
   const PORT = 3000;
   server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
+    log(`Server started at http://0.0.0.0:${PORT}`);
   });
 })();
