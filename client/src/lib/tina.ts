@@ -9,7 +9,7 @@ export default defineConfig({
   clientId: clientId || "",
   token: token || "",
   build: {
-    outputFolder: "admin",
+    outputFolder: "dist/public/admin",
     publicFolder: "public",
     basePath: "admin",
   },
@@ -19,6 +19,10 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
+  // Enable local mode for development without GitHub
+  local: true,
+  // Local content API endpoint
+  contentApiUrlOverride: "/api/tina/gql",
   schema: {
     collections: [
       {

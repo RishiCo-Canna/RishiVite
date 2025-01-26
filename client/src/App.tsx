@@ -13,7 +13,7 @@ import tinaConfig from "./lib/tina";
 
 const cms = new TinaCMS({
   ...tinaConfig,
-  enabled: process.env.NODE_ENV === 'development',
+  enabled: true,
   sidebar: false,
 });
 
@@ -28,7 +28,8 @@ function Router() {
           <Route path="/admin-dashboard" component={Admin} />
           <Route path="/admin">
             {() => {
-              window.location.href = "/admin/index.html";
+              // Ensure the admin UI is built and served from the correct path
+              window.location.replace("/admin/index.html");
               return null;
             }}
           </Route>
