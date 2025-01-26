@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import ReactMarkdown from 'react-markdown';
+import { useTina } from "tinacms/dist/react";
+import { TinaMarkdown } from "tinacms/dist/rich-text";
 
 type Post = {
   title: string;
@@ -13,9 +14,16 @@ type Post = {
 };
 
 export default function Blog() {
-  const { data: posts, isLoading } = useQuery<Post[]>({
+  const { data: rawPosts, isLoading } = useQuery<Post[]>({
     queryKey: [import.meta.env.PROD ? "/data/posts.json" : "/api/posts"],
   });
+
+  // Transform posts data for Tina
+  const posts = rawPosts?.map(post => ({
+    ...post,
+    // Ensure body is properly formatted for TinaMarkdown
+    body: typeof post.body === 'string' ? { type: 'root', children: [{ type: 'text', text: post.body }] } : post.body
+  }));
 
   if (isLoading) {
     return (
@@ -49,7 +57,7 @@ export default function Blog() {
               </CardHeader>
               <CardContent>
                 <div className="prose dark:prose-invert max-w-none">
-                  <ReactMarkdown>{post.body}</ReactMarkdown>
+                  <TinaMarkdown content={post.body} />
                 </div>
               </CardContent>
             </Card>

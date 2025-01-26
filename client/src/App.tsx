@@ -8,6 +8,10 @@ import Blog from "@/pages/blog";
 import Admin from "@/pages/admin";
 import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
+import { TinaProvider, TinaCMS } from "tinacms";
+import tinaConfig from "./lib/tina";
+
+const cms = new TinaCMS(tinaConfig);
 
 function Router() {
   return (
@@ -28,10 +32,12 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
-    </QueryClientProvider>
+    <TinaProvider cms={cms}>
+      <QueryClientProvider client={queryClient}>
+        <Router />
+        <Toaster />
+      </QueryClientProvider>
+    </TinaProvider>
   );
 }
 
