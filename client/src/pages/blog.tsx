@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
+import ReactMarkdown from 'react-markdown';
 
 type Post = {
   title: string;
@@ -47,10 +48,9 @@ export default function Blog() {
                 </p>
               </CardHeader>
               <CardContent>
-                <div
-                  className="prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: post.body }}
-                />
+                <div className="prose dark:prose-invert max-w-none">
+                  <ReactMarkdown>{post.body}</ReactMarkdown>
+                </div>
               </CardContent>
             </Card>
           ))}

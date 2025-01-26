@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { compile } from "@mdx-js/mdx";
 import matter from "gray-matter";
+import * as runtime from "react/jsx-runtime";
 
 export function registerRoutes(app: Express): Server {
   // API Routes for development
@@ -18,10 +19,16 @@ export function registerRoutes(app: Express): Server {
             "utf-8"
           );
           const { data, content: mdxContent } = matter(content);
-          const compiledMdx = await compile(mdxContent);
+          const compiled = await compile(mdxContent, {
+            outputFormat: 'function-body',
+            development: false,
+            pragma: 'React.createElement',
+            pragmaFrag: 'React.Fragment'
+          });
+
           return {
             ...data,
-            body: String(compiledMdx),
+            body: String(compiled),
             _sys: {
               relativePath: file,
             },
