@@ -1,30 +1,19 @@
 import { defineConfig } from "tinacms";
 
-// Define the base URL for the API
-const apiURL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000/api/tina'
-  : '/api/tina';
-
 export default defineConfig({
-  // Build configuration
+  branch: "",  // Empty for local development
+  clientId: process.env.TINA_CLIENT_ID,  // Will be used when deploying
+  token: process.env.TINA_TOKEN,         // Will be used when deploying
   build: {
     outputFolder: "admin",
     publicFolder: "public",
-    basePath: "",
   },
-
-  // API Configuration
-  contentApiUrlOverride: `${apiURL}/gql`,
-
-  // Media Management
   media: {
     tina: {
       publicFolder: "public",
       mediaRoot: "uploads",
     },
   },
-
-  // Content Schema
   schema: {
     collections: [
       {
@@ -54,38 +43,6 @@ export default defineConfig({
           },
         ],
       },
-      {
-        name: "page",
-        label: "Pages",
-        path: "content/pages",
-        format: "mdx",
-        fields: [
-          {
-            type: "string",
-            name: "title",
-            label: "Title",
-            isTitle: true,
-            required: true,
-          },
-          {
-            type: "string",
-            name: "description",
-            label: "Description",
-          },
-          {
-            type: "rich-text",
-            name: "body",
-            label: "Body",
-            isBody: true,
-          },
-        ],
-      },
     ],
   },
-
-  // Force local mode for development
-  local: true,
-  branch: "main",  // Use main branch
-  clientId: process.env.TINA_CLIENT_ID,  // TinaCMS Client ID
-  token: process.env.GITHUB_TOKEN,      // GitHub Token for authentication
 });

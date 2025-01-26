@@ -1,92 +1,44 @@
 import { spawn } from "child_process";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs/promises";
-import pkg from '@tinacms/cli';
-const { build } = pkg;
+import { createServer } from "@tinacms/cli";
+import config from "../.tina/config.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-async function init() {
+async function startDev() {
   try {
-    console.log("Starting development setup...");
-
-    // Ensure directories exist
-    const adminDir = path.resolve(process.cwd(), "admin");
-    await fs.mkdir(adminDir, { recursive: true });
-
-    // Clean existing admin build
-    await fs.rm(adminDir, { recursive: true, force: true }).catch(() => {});
-
-    // Set environment for local development
-    process.env.TINA_PUBLIC_IS_LOCAL = "true";
-    process.env.PUBLIC_URL = "http://localhost:5000";
-
-    console.log("Building Tina admin interface...");
-    await build({
-      schema: {
-        collections: [
-          {
-            name: "post",
-            label: "Posts",
-            path: "content/posts",
-            format: "mdx",
-            fields: [
-              {
-                type: "string",
-                name: "title",
-                label: "Title",
-                isTitle: true,
-                required: true,
-              },
-              {
-                type: "datetime",
-                name: "date",
-                label: "Date",
-                required: true,
-              },
-              {
-                type: "rich-text",
-                name: "body",
-                label: "Body",
-                isBody: true,
-              },
-            ],
-          },
-        ],
-      },
-      build: {
-        outputFolder: "admin",
-        publicFolder: "public",
-        basePath: "",
-      },
-      local: true,
+    // Start TinaCMS server
+    console.log("Starting TinaCMS development server...");
+    const tinaServer = await createServer({
+      ...config,
+      port: 5001,
     });
 
     // Start the Express server
+    console.log("Starting Express server...");
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
       env: {
         ...process.env,
-        TINA_PUBLIC_IS_LOCAL: "true",
+        NODE_ENV: "development",
       },
     });
 
     // Handle process termination
     process.on("SIGTERM", () => {
+      tinaServer.close();
       mainApp.kill();
       process.exit(0);
     });
 
     process.on("SIGINT", () => {
+      tinaServer.close();
       mainApp.kill();
       process.exit(0);
     });
+
   } catch (error) {
-    console.error("\nDevelopment setup failed:", error);
+    console.error("Development setup failed:", error);
     process.exit(1);
   }
 }
 
-init().catch(console.error);
+startDev().catch(console.error);

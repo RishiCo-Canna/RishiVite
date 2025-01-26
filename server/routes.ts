@@ -9,21 +9,6 @@ export function registerRoutes(app: Express): Server {
   // Serve static files from public directory
   app.use(express.static(path.resolve(process.cwd(), "public")));
 
-  // Serve the admin interface
-  app.use("/admin", express.static(path.resolve(process.cwd(), "admin")));
-
-  // Mock TinaCMS GraphQL API endpoint for development
-  app.post('/api/tina/gql', (req, res) => {
-    res.json({ 
-      data: { 
-        node: null,
-        getCollection: {
-          documents: []
-        }
-      } 
-    });
-  });
-
   // Blog posts API
   app.get("/api/posts", async (req, res) => {
     try {
@@ -47,18 +32,13 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Always serve admin/index.html for /admin routes
-  app.get(["/admin", "/admin/*"], (req, res) => {
-    const adminIndexPath = path.resolve(process.cwd(), "admin", "index.html");
-    if (fs.existsSync(adminIndexPath)) {
-      res.sendFile(adminIndexPath);
-    } else {
-      res.status(404).send("Admin interface not built. Please wait while we build it...");
-    }
-  });
+  // In development, redirect /admin to TinaCMS server
+  if (process.env.NODE_ENV === 'development') {
+    app.use('/admin', (req, res) => {
+      res.redirect('http://localhost:5001/admin');
+    });
+  }
 
-  // Create the HTTP server
   const httpServer = createServer(app);
-
   return httpServer;
 }
