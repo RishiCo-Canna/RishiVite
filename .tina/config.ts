@@ -2,9 +2,9 @@
 import { defineConfig } from "tinacms";
 
 export default defineConfig({
-  branch: process.env.GITHUB_BRANCH || "main",
-  clientId: process.env.TINA_CLIENT_ID,
-  token: process.env.TINA_TOKEN,
+  branch: "",  // Empty for local development
+  clientId: process.env.TINA_CLIENT_ID || "",  // Will use env var if available
+  token: process.env.TINA_TOKEN || "",  // Will use env var if available
   build: {
     outputFolder: "admin",
     publicFolder: "public",
@@ -47,4 +47,6 @@ export default defineConfig({
       mediaRoot: "uploads",
     },
   },
+  // Enable local mode for development
+  local: true,
 });
