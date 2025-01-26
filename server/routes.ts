@@ -30,13 +30,15 @@ export function registerRoutes(app: Express): Server {
   // Admin routes handling
   const adminPath = path.resolve(process.cwd(), "admin");
 
-  // Serve static files from admin directory
+  // First serve static files
+  console.log("Serving admin static files from:", adminPath);
   app.use("/admin", express.static(adminPath));
 
-  // SPA fallback for admin routes
+  // Then handle SPA routes
   app.get(["/admin", "/admin/*"], async (req, res) => {
     try {
       const indexPath = path.join(adminPath, "index.html");
+      // Verify the file exists before sending
       await fs.access(indexPath);
       res.sendFile(indexPath);
     } catch (err) {

@@ -6,63 +6,96 @@ import fs from "fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+async function validateAdminBuild(adminPath) {
+  try {
+    const files = await fs.readdir(adminPath);
+    console.log("Admin build contents:", files);
+
+    const requiredFiles = ["index.html", "assets"];
+    const missingFiles = requiredFiles.filter(file => !files.includes(file));
+
+    if (missingFiles.length > 0) {
+      throw new Error(`Missing required files: ${missingFiles.join(", ")}`);
+    }
+
+    // Verify index.html exists and is readable
+    await fs.access(path.join(adminPath, "index.html"), fs.constants.R_OK);
+    return true;
+  } catch (error) {
+    console.error("Admin build validation failed:", error);
+    return false;
+  }
+}
+
+async function buildTinaAdmin() {
+  const adminPath = path.resolve(process.cwd(), "admin");
+  console.log("Building Tina CMS admin to:", adminPath);
+
+  // Clean existing build
+  await fs.rm(adminPath, { recursive: true, force: true }).catch(() => {});
+  await fs.mkdir(adminPath, { recursive: true });
+
+  // Build with explicit configuration
+  await build({
+    config: {
+      build: {
+        outputFolder: adminPath,
+        publicFolder: "public",
+        basePath: "",
+      },
+      local: true,
+      schema: {
+        collections: [
+          {
+            name: "post",
+            label: "Posts",
+            path: "content/posts",
+            format: "mdx",
+            fields: [
+              {
+                type: "string",
+                name: "title",
+                label: "Title",
+                isTitle: true,
+                required: true,
+              },
+              {
+                type: "datetime",
+                name: "date",
+                label: "Date",
+                required: true,
+              },
+              {
+                type: "rich-text",
+                name: "body",
+                label: "Body",
+                isBody: true,
+              },
+            ],
+          },
+        ],
+      },
+    }
+  });
+
+  const isValid = await validateAdminBuild(adminPath);
+  if (!isValid) {
+    throw new Error("Admin build validation failed");
+  }
+
+  return true;
+}
+
 async function init() {
   try {
     console.log("Starting Tina CMS build process...");
 
-    // Clean and recreate admin directory
-    const adminPath = path.join(process.cwd(), "admin");
-    await fs.rm(adminPath, { recursive: true, force: true });
-    await fs.mkdir(adminPath, { recursive: true });
+    // Build admin interface first
+    await buildTinaAdmin();
+    console.log("Tina CMS build completed successfully");
 
-    // Basic Tina config for local development
-    await build({
-      config: {
-        build: {
-          outputFolder: adminPath,
-          publicFolder: "public",
-          basePath: "",
-        },
-        local: true,
-        schema: {
-          collections: [
-            {
-              name: "post",
-              label: "Posts",
-              path: "content/posts",
-              format: "mdx",
-              fields: [
-                {
-                  type: "string",
-                  name: "title",
-                  label: "Title",
-                  isTitle: true,
-                  required: true,
-                },
-                {
-                  type: "rich-text",
-                  name: "body",
-                  label: "Body",
-                  isBody: true,
-                },
-              ],
-            },
-          ],
-        },
-      }
-    });
-
-    // Verify build output
-    const files = await fs.readdir(adminPath);
-    console.log("Admin build contents:", files);
-
-    if (!files.includes("index.html")) {
-      throw new Error("Admin build failed: index.html not found");
-    }
-
-    console.log("Tina CMS build successful, starting application server...");
-
-    // Start the Express server
+    // Only start server after successful build
+    console.log("Starting application server...");
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
