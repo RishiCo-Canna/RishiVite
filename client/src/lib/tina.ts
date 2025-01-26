@@ -9,7 +9,7 @@ export default defineConfig({
   clientId: clientId || "",
   token: token || "",
   build: {
-    outputFolder: "dist/public/admin",
+    outputFolder: "admin",
     publicFolder: "public",
     basePath: "",
   },
@@ -19,15 +19,15 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
+  // Enable local mode for development
+  local: true,
   // Configure API URL for local development
   contentApiUrlOverride: "/api/tina/gql",
-  // Disable sidebar for main app, enable it only in admin
-  sidebar: false,
   schema: {
     collections: [
       {
         name: "post",
-        label: "Posts",
+        label: "Blog Posts",
         path: "content/posts",
         format: "mdx",
         ui: {
@@ -44,6 +44,12 @@ export default defineConfig({
             name: "title",
             label: "Title",
             isTitle: true,
+            required: true,
+          },
+          {
+            type: "datetime",
+            name: "date",
+            label: "Date",
             required: true,
           },
           {
@@ -70,11 +76,86 @@ export default defineConfig({
               },
             ],
           },
+        ],
+      },
+      {
+        name: "page",
+        label: "Pages",
+        path: "content/pages",
+        format: "mdx",
+        ui: {
+          filename: {
+            readonly: true,
+            slugify: (values) => {
+              return `${values?.title?.toLowerCase().replace(/ /g, '-')}`;
+            },
+          },
+        },
+        fields: [
           {
-            type: "datetime",
-            name: "date",
-            label: "Date",
+            type: "string",
+            name: "title",
+            label: "Title",
+            isTitle: true,
             required: true,
+          },
+          {
+            type: "string",
+            name: "description",
+            label: "Description",
+          },
+          {
+            type: "rich-text",
+            name: "body",
+            label: "Body",
+            isBody: true,
+            templates: [
+              {
+                name: "Hero",
+                label: "Hero Section",
+                fields: [
+                  {
+                    name: "heading",
+                    label: "Heading",
+                    type: "string",
+                  },
+                  {
+                    name: "subheading",
+                    label: "Sub Heading",
+                    type: "string",
+                  },
+                  {
+                    name: "backgroundImage",
+                    label: "Background Image",
+                    type: "image",
+                  },
+                ],
+              },
+              {
+                name: "Features",
+                label: "Features List",
+                fields: [
+                  {
+                    name: "items",
+                    label: "Feature Items",
+                    type: "object",
+                    list: true,
+                    fields: [
+                      {
+                        name: "title",
+                        label: "Title",
+                        type: "string",
+                      },
+                      {
+                        name: "description",
+                        label: "Description",
+                        type: "string",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
