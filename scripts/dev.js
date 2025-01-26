@@ -1,8 +1,9 @@
 import { spawn } from "child_process";
-import { build } from "@tinacms/cli";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
+import pkg from '@tinacms/cli';
+const { build } = pkg;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
