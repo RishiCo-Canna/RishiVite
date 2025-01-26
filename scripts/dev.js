@@ -2,26 +2,66 @@ import { spawn } from "child_process";
 import { build } from "@tinacms/cli";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Use path relative to the project root for Tina config
-const tinaConfigPath = path.join(__dirname, "../.tina/config.ts");
-
 async function init() {
   try {
-    console.log("Building Tina admin interface...");
+    console.log("Starting Tina CMS build process...");
 
-    // First build the admin interface
+    // Clean and recreate admin directory
+    const adminPath = path.join(process.cwd(), "admin");
+    await fs.rm(adminPath, { recursive: true, force: true });
+    await fs.mkdir(adminPath, { recursive: true });
+
+    // Basic Tina config for local development
     await build({
-      config: tinaConfigPath,
-      // Ensure local mode is enabled
-      local: true
+      config: {
+        build: {
+          outputFolder: "admin",
+          publicFolder: "public",
+        },
+        local: true,
+        schema: {
+          collections: [
+            {
+              name: "post",
+              label: "Posts",
+              path: "content/posts",
+              format: "mdx",
+              fields: [
+                {
+                  type: "string",
+                  name: "title",
+                  label: "Title",
+                  isTitle: true,
+                  required: true,
+                },
+                {
+                  type: "rich-text",
+                  name: "body",
+                  label: "Body",
+                  isBody: true,
+                },
+              ],
+            },
+          ],
+        },
+      }
     });
 
-    console.log("Tina admin build complete");
+    // Verify build output
+    const files = await fs.readdir(adminPath);
+    console.log("Admin build contents:", files);
 
-    // Then start the main application
+    if (!files.includes("index.html")) {
+      throw new Error("Admin build failed: index.html not found");
+    }
+
+    console.log("Tina CMS build successful, starting application server...");
+
+    // Start the Express server
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
@@ -31,7 +71,6 @@ async function init() {
       }
     });
 
-    // Handle process termination
     process.on("SIGTERM", () => {
       mainApp.kill();
       process.exit(0);

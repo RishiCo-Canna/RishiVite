@@ -7,12 +7,11 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import MemoryStore from "memorystore";
-import express from "express";
 
 const SessionStore = MemoryStore(session);
 
 export function registerRoutes(app: Express): Server {
-  // Session middleware
+  // Session middleware setup
   app.use(
     session({
       secret: "keyboard cat",
@@ -27,30 +26,49 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Serve Tina CMS admin interface from the built admin directory
-  app.use("/admin", express.static(path.join(process.cwd(), "admin")));
+  // Admin routes handling
+  app.get(["/admin", "/admin/*"], async (req, res) => {
+    const adminPath = path.resolve(process.cwd(), "admin");
+    const indexPath = path.join(adminPath, "index.html");
 
-  // Fallback route for admin SPA
-  app.get("/admin/*", (_req, res) => {
-    res.sendFile(path.join(process.cwd(), "admin", "index.html"));
+    try {
+      // Check if admin directory exists
+      await fs.access(adminPath);
+
+      // For static assets in admin directory
+      if (req.path !== "/admin" && req.path !== "/admin/") {
+        const assetPath = path.join(adminPath, req.path.replace("/admin", ""));
+        try {
+          await fs.access(assetPath);
+          return res.sendFile(assetPath);
+        } catch {
+          // If asset not found, fall back to index.html
+        }
+      }
+
+      // Serve index.html
+      try {
+        await fs.access(indexPath);
+        res.sendFile(indexPath);
+      } catch (err) {
+        res.status(500).send(
+          "Admin interface is not available. Please ensure the admin build is complete."
+        );
+      }
+    } catch (err) {
+      res.status(500).send(
+        "Admin directory not found. Please ensure Tina CMS is properly built."
+      );
+    }
   });
 
-  // Base URL middleware
-  app.use((req, res, next) => {
-    const protocol = req.headers["x-forwarded-proto"] || "http";
-    const host = req.headers["x-forwarded-host"] || req.headers.host;
-    req.baseUrl = `${protocol}://${host}`;
-    next();
-  });
-
-  // Configure GitHub strategy
+  // Authentication setup
   passport.use(
     new GitHubStrategy(
       {
         clientID: process.env.GITHUB_CLIENT_ID!,
         clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         callbackURL: "/auth/github/callback",
-        proxy: true
       },
       function (accessToken: any, refreshToken: any, profile: any, done: any) {
         return done(null, profile);
@@ -66,69 +84,25 @@ export function registerRoutes(app: Express): Server {
     done(null, user);
   });
 
-  // Auth routes
-  app.get("/auth/github", (req, res, next) => {
-    const authOptions = {
-      scope: ["user:email"],
-      callbackURL: `${req.baseUrl}/auth/github/callback`
-    };
-    passport.authenticate("github", authOptions)(req, res, next);
-  });
-
-  app.get(
-    "/auth/github/callback",
-    (req, res, next) => {
-      const authOptions = {
-        failureRedirect: "/login",
-        callbackURL: `${req.baseUrl}/auth/github/callback`
-      };
-      passport.authenticate("github", authOptions)(req, res, next);
-    },
-    function (req, res) {
-      res.redirect("/admin-dashboard");
-    }
-  );
-
-  // Auth test endpoint
-  app.get("/auth/test", (req, res) => {
-    if (req.isAuthenticated()) {
-      res.json({ 
-        authenticated: true, 
-        user: req.user,
-        message: "GitHub OAuth is working correctly!" 
-      });
-    } else {
-      res.json({ 
-        authenticated: false, 
-        message: "Not authenticated" 
-      });
-    }
-  });
-
   // Blog posts API
-  app.get("/api/posts", async (_req, res) => {
+  app.get("/api/posts", async (req, res) => {
     try {
       const postsDir = path.join(process.cwd(), "content/posts");
       const files = await fs.readdir(postsDir);
       const posts = await Promise.all(
         files.map(async (file) => {
-          const content = await fs.readFile(
-            path.join(postsDir, file),
-            "utf-8"
-          );
+          const content = await fs.readFile(path.join(postsDir, file), "utf-8");
           const { data, content: mdContent } = matter(content);
           return {
             ...data,
             body: mdContent,
-            _sys: {
-              relativePath: file,
-            },
+            _sys: { relativePath: file },
           };
         })
       );
-      res.json(posts.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      res.json(posts);
     } catch (err) {
-      console.error("Error in posts endpoint:", err);
+      console.error("Error loading posts:", err);
       res.status(500).json({ error: "Failed to load posts" });
     }
   });
