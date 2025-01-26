@@ -6,17 +6,23 @@ const token = import.meta.env.VITE_TINA_TOKEN;
 
 export default defineConfig({
   branch: "main",
-  clientId: clientId || "",  // This satisfies the type requirement
+  clientId: clientId || "",
   token: token || "",
   build: {
     outputFolder: "admin",
     publicFolder: "public",
-    basePath: "",
+    basePath: "admin",
   },
   media: {
     tina: {
       mediaRoot: "uploads",
       publicFolder: "public",
+    },
+  },
+  // Configure admin UI
+  admin: {
+    auth: {
+      useLocalAuth: true,
     },
   },
   schema: {
