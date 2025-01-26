@@ -4,18 +4,11 @@ export default function AdminRoute() {
   const cms = new TinaCMS({
     clientId: import.meta.env.VITE_TINA_CLIENT_ID ?? '',
     token: import.meta.env.VITE_TINA_TOKEN ?? '',
-    branch: import.meta.env.PROD ? "main" : "",
+    branch: "main",
     contentApiUrlOverride: "/api/tina/gql",
     build: {
       outputFolder: "admin",
       publicFolder: "public",
-      basePath: "",
-    },
-    media: {
-      tina: {
-        mediaRoot: "uploads",
-        publicFolder: "public",
-      },
     },
     schema: {
       collections: [
@@ -33,12 +26,6 @@ export default function AdminRoute() {
               required: true,
             },
             {
-              type: "datetime",
-              name: "date",
-              label: "Date",
-              required: true,
-            },
-            {
               type: "rich-text",
               name: "body",
               label: "Body",
@@ -47,10 +34,6 @@ export default function AdminRoute() {
           ],
         },
       ],
-    },
-    cmsCallback: (cms) => {
-      cms.flags.set("branch-switcher", true);
-      return cms;
     },
   });
 
