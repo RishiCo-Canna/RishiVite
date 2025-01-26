@@ -27,20 +27,28 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Passport config
-  passport.use(
-    new GitHubStrategy(
-      {
-        clientID: process.env.GITHUB_CLIENT_ID!,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-        callbackURL: "http://localhost:5000/auth/github/callback",
-      },
-      function (accessToken, refreshToken, profile, done) {
-        // For testing, we'll just pass the profile through
-        return done(null, profile);
-      }
-    )
-  );
+  // Dynamic callback URL based on request
+  app.use((req, _res, next) => {
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const baseUrl = `${protocol}://${host}`;
+
+    // Configure GitHub strategy with dynamic callback URL
+    passport.use(
+      new GitHubStrategy(
+        {
+          clientID: process.env.GITHUB_CLIENT_ID!,
+          clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+          callbackURL: `${baseUrl}/auth/github/callback`,
+        },
+        function (accessToken, refreshToken, profile, done) {
+          // For testing, we'll just pass the profile through
+          return done(null, profile);
+        }
+      )
+    );
+    next();
+  });
 
   passport.serializeUser((user, done) => {
     done(null, user);
