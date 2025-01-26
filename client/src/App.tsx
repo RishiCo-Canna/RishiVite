@@ -9,8 +9,6 @@ import Admin from "@/pages/admin";
 import AdminRoute from "@/pages/admin-route";
 import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
-import { TinaProvider, TinaCMS } from "tinacms";
-import tinaConfig from "./lib/tina";
 
 function Router() {
   return (
@@ -31,20 +29,11 @@ function Router() {
 }
 
 function App() {
-  // Create a new TinaCMS instance with our config
-  const cms = new TinaCMS({
-    ...tinaConfig,
-    enabled: true,
-    sidebar: true
-  });
-
   return (
-    <TinaProvider cms={cms}>
-      <QueryClientProvider client={queryClient}>
-        <Router />
-        <Toaster />
-      </QueryClientProvider>
-    </TinaProvider>
+    <QueryClientProvider client={queryClient}>
+      <Router />
+      <Toaster />
+    </QueryClientProvider>
   );
 }
 
