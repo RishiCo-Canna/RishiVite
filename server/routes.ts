@@ -2,9 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import fs from "fs/promises";
-import { compile } from "@mdx-js/mdx";
 import matter from "gray-matter";
-import * as runtime from "react/jsx-runtime";
 
 export function registerRoutes(app: Express): Server {
   // API Routes for development
@@ -18,24 +16,18 @@ export function registerRoutes(app: Express): Server {
             path.join(postsDir, file),
             "utf-8"
           );
-          const { data, content: mdxContent } = matter(content);
-          const compiled = await compile(mdxContent, {
-            outputFormat: 'function-body',
-            development: false,
-            pragma: 'React.createElement',
-            pragmaFrag: 'React.Fragment'
-          });
+          const { data, content: mdContent } = matter(content);
 
           return {
             ...data,
-            body: String(compiled),
+            body: mdContent,
             _sys: {
               relativePath: file,
             },
           };
         })
       );
-      res.json(posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      res.json(posts.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to load posts" });

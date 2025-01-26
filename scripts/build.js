@@ -3,7 +3,6 @@ import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";
-import { compile } from "@mdx-js/mdx";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -15,18 +14,17 @@ async function generateStaticContent() {
   process.env.TINA_PUBLIC_IS_LOCAL = "true";
   await import("@tinacms/cli").then((cli) => cli.build());
 
-  // Process MDX content
+  // Process markdown content
   const postsDir = resolve(__dirname, "../content/posts");
   const files = await fs.readdir(postsDir);
-  
+
   const posts = await Promise.all(
     files.map(async (file) => {
       const content = await fs.readFile(resolve(postsDir, file), "utf-8");
-      const { data, content: mdxContent } = matter(content);
-      const compiledMdx = await compile(mdxContent);
+      const { data, content: mdContent } = matter(content);
       return {
         ...data,
-        body: String(compiledMdx),
+        body: mdContent,
         _sys: { relativePath: file },
       };
     })
