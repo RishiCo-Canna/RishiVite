@@ -3,9 +3,81 @@ import { createServer, type Server } from "http";
 import path from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";
+import passport from "passport";
+import { Strategy as GitHubStrategy } from "passport-github2";
+import session from "express-session";
+import MemoryStore from "memorystore";
+
+const SessionStore = MemoryStore(session);
 
 export function registerRoutes(app: Express): Server {
-  // API Routes for development
+  // Session middleware
+  app.use(
+    session({
+      secret: "keyboard cat", // This is just for testing
+      resave: false,
+      saveUninitialized: false,
+      store: new SessionStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      }),
+    })
+  );
+
+  // Initialize Passport
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Passport config
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID!,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        callbackURL: "http://localhost:5000/auth/github/callback",
+      },
+      function (accessToken, refreshToken, profile, done) {
+        // For testing, we'll just pass the profile through
+        return done(null, profile);
+      }
+    )
+  );
+
+  passport.serializeUser((user, done) => {
+    done(null, user);
+  });
+
+  passport.deserializeUser((user, done) => {
+    done(null, user);
+  });
+
+  // Test authentication routes
+  app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+
+  app.get(
+    "/auth/github/callback",
+    passport.authenticate("github", { failureRedirect: "/login" }),
+    function (req, res) {
+      res.redirect("/auth/test");
+    }
+  );
+
+  // Test verification endpoint
+  app.get("/auth/test", (req, res) => {
+    if (req.isAuthenticated()) {
+      res.json({ 
+        authenticated: true, 
+        user: req.user,
+        message: "GitHub OAuth is working correctly!" 
+      });
+    } else {
+      res.json({ 
+        authenticated: false, 
+        message: "Not authenticated" 
+      });
+    }
+  });
+
+  // Existing blog posts route
   app.get("/api/posts", async (_req, res) => {
     try {
       const postsDir = path.join(process.cwd(), "content/posts");
