@@ -1,16 +1,12 @@
 import { defineConfig } from "tinacms";
 
+// Configuration for local development
 export default defineConfig({
-  branch: "", // Empty for local development
-  clientId: process.env.TINA_CLIENT_ID, // Will be injected
-  token: process.env.TINA_TOKEN,    // Will be injected
   build: {
-    outputFolder: "admin",
+    outputFolder: "public/admin",  // Build directly into public/admin
     publicFolder: "public",
-    basePath: "",
+    basePath: "admin",  // Ensure URLs are prefixed with /admin
   },
-  // Force local mode for development
-  local: true,
   schema: {
     collections: [
       {
@@ -18,14 +14,6 @@ export default defineConfig({
         label: "Posts",
         path: "content/posts",
         format: "mdx",
-        ui: {
-          filename: {
-            readonly: true,
-            slugify: (values) => {
-              return `${values?.title?.toLowerCase().replace(/ /g, '-')}`;
-            },
-          },
-        },
         fields: [
           {
             type: "string",

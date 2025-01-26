@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import express from "express";
 import path from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";
@@ -7,7 +8,6 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import MemoryStore from "memorystore";
-import express from "express";
 
 const SessionStore = MemoryStore(session);
 
@@ -49,29 +49,12 @@ export function registerRoutes(app: Express): Server {
     done(null, user);
   });
 
-  // Configure admin interface serving
-  const adminPath = path.resolve(process.cwd(), "admin");
-  console.log("[Admin] Serving from:", adminPath);
+  // Serve static files from public directory
+  app.use(express.static(path.resolve(process.cwd(), "public")));
 
-  // Serve static files from admin build with proper content types
-  app.use("/admin", express.static(adminPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.js')) {
-        res.setHeader('Content-Type', 'application/javascript');
-      } else if (filePath.endsWith('.css')) {
-        res.setHeader('Content-Type', 'text/css');
-      }
-    }
-  }));
-
-  // Handle all admin routes - must come after static serving
-  app.get(["/admin", "/admin/*"], (req, res, next) => {
-    try {
-      const indexPath = path.join(adminPath, "index.html");
-      res.sendFile(indexPath);
-    } catch (error) {
-      next(error);
-    }
+  // Handle SPA routes by serving index.html
+  app.get(["/admin", "/admin/*"], (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), "public/admin/index.html"));
   });
 
   // Blog posts API
