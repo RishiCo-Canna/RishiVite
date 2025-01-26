@@ -7,6 +7,7 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import express from "express";
 
 const SessionStore = MemoryStore(session);
 
@@ -25,6 +26,14 @@ export function registerRoutes(app: Express): Server {
 
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Serve Tina CMS admin interface from the built admin directory
+  app.use("/admin", express.static(path.join(process.cwd(), "admin")));
+
+  // Fallback route for admin SPA
+  app.get("/admin/*", (_req, res) => {
+    res.sendFile(path.join(process.cwd(), "admin", "index.html"));
+  });
 
   // Base URL middleware
   app.use((req, res, next) => {
@@ -93,47 +102,6 @@ export function registerRoutes(app: Express): Server {
         authenticated: false, 
         message: "Not authenticated" 
       });
-    }
-  });
-
-  // Tina CMS API routes
-  app.post("/api/tina/gql", async (req, res) => {
-    try {
-      const postsDir = path.join(process.cwd(), "content/posts");
-      const files = await fs.readdir(postsDir);
-      const posts = await Promise.all(
-        files.map(async (file) => {
-          const content = await fs.readFile(
-            path.join(postsDir, file),
-            "utf-8"
-          );
-          const { data, content: mdContent } = matter(content);
-          return {
-            ...data,
-            body: mdContent,
-            _sys: {
-              relativePath: file,
-              basename: path.basename(file, path.extname(file)),
-              filename: file,
-              extension: path.extname(file).slice(1),
-            },
-          };
-        })
-      );
-
-      // Return in the format expected by Tina's GraphQL API
-      res.json({
-        data: {
-          post: {
-            edges: posts.map(post => ({
-              node: post
-            }))
-          }
-        }
-      });
-    } catch (err) {
-      console.error("Error in Tina GQL endpoint:", err);
-      res.status(500).json({ error: "Failed to fetch posts" });
     }
   });
 
