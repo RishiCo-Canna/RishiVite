@@ -4,6 +4,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import matter from "gray-matter";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 export function registerRoutes(app: Express): Server {
   // Serve static files from public directory
@@ -32,10 +33,24 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // In development, redirect /admin to TinaCMS server
+  // Handle admin routes
   if (process.env.NODE_ENV === 'development') {
-    app.use('/admin', (req, res) => {
-      res.redirect('http://localhost:5001/admin');
+    // In development, proxy all admin requests to TinaCMS server
+    app.use(['/admin', '/admin/*'], createProxyMiddleware({
+      target: 'http://localhost:5001',
+      changeOrigin: true,
+      ws: true,
+      logLevel: 'debug'
+    }));
+  } else {
+    // In production, serve the static admin files
+    app.get(['/admin', '/admin/*'], (req, res) => {
+      const adminIndexPath = path.join(process.cwd(), 'public', 'admin', 'index.html');
+      if (fs.existsSync(adminIndexPath)) {
+        res.sendFile(adminIndexPath);
+      } else {
+        res.status(404).send('Admin interface not available. Please build the admin interface first.');
+      }
     });
   }
 
