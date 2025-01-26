@@ -1,22 +1,27 @@
 import { TinaProvider, TinaCMS } from "tinacms";
-import tinaConfig from "../lib/tina";
 
 export default function AdminRoute() {
-  // Create a separate CMS instance for the admin route with all required config
   const cms = new TinaCMS({
-    ...tinaConfig,
-    enabled: true,
-    sidebar: true,
     clientId: import.meta.env.VITE_TINA_CLIENT_ID ?? '',
-    branch: "main",
     token: import.meta.env.VITE_TINA_TOKEN ?? '',
+    branch: import.meta.env.PROD ? "main" : "",
     contentApiUrlOverride: "/api/tina/gql",
-    local: true, // Enable local mode for development
+    build: {
+      outputFolder: "admin",
+      publicFolder: "public",
+      basePath: "",
+    },
+    media: {
+      tina: {
+        mediaRoot: "uploads",
+        publicFolder: "public",
+      },
+    },
     schema: {
       collections: [
         {
           name: "post",
-          label: "Blog Posts",
+          label: "Posts",
           path: "content/posts",
           format: "mdx",
           fields: [
@@ -42,7 +47,11 @@ export default function AdminRoute() {
           ],
         },
       ],
-    }
+    },
+    cmsCallback: (cms) => {
+      cms.flags.set("branch-switcher", true);
+      return cms;
+    },
   });
 
   return (

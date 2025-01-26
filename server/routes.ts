@@ -14,20 +14,19 @@ export function registerRoutes(app: Express): Server {
   // Session middleware
   app.use(
     session({
-      secret: "keyboard cat", // This is just for testing
+      secret: "keyboard cat",
       resave: false,
       saveUninitialized: false,
       store: new SessionStore({
-        checkPeriod: 86400000 // prune expired entries every 24h
+        checkPeriod: 86400000
       }),
     })
   );
 
-  // Initialize Passport
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Base URL middleware - must come before passport strategy setup
+  // Base URL middleware
   app.use((req, res, next) => {
     const protocol = req.headers["x-forwarded-proto"] || "http";
     const host = req.headers["x-forwarded-host"] || req.headers.host;
@@ -35,7 +34,7 @@ export function registerRoutes(app: Express): Server {
     next();
   });
 
-  // Configure GitHub strategy with dynamic callback URL
+  // Configure GitHub strategy
   passport.use(
     new GitHubStrategy(
       {
@@ -58,7 +57,7 @@ export function registerRoutes(app: Express): Server {
     done(null, user);
   });
 
-  // Test authentication routes
+  // Auth routes
   app.get("/auth/github", (req, res, next) => {
     const authOptions = {
       scope: ["user:email"],
@@ -77,12 +76,11 @@ export function registerRoutes(app: Express): Server {
       passport.authenticate("github", authOptions)(req, res, next);
     },
     function (req, res) {
-      // Redirect to the admin dashboard instead of showing raw JSON
       res.redirect("/admin-dashboard");
     }
   );
 
-  // Test verification endpoint - keep this for the admin page to verify auth status
+  // Auth test endpoint
   app.get("/auth/test", (req, res) => {
     if (req.isAuthenticated()) {
       res.json({ 
@@ -98,7 +96,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Tina CMS local API routes
+  // Tina CMS API routes
   app.post("/api/tina/gql", async (req, res) => {
     try {
       const postsDir = path.join(process.cwd(), "content/posts");
@@ -110,16 +108,20 @@ export function registerRoutes(app: Express): Server {
             "utf-8"
           );
           const { data, content: mdContent } = matter(content);
-
           return {
             ...data,
             body: mdContent,
             _sys: {
               relativePath: file,
+              basename: path.basename(file, path.extname(file)),
+              filename: file,
+              extension: path.extname(file).slice(1),
             },
           };
         })
       );
+
+      // Return in the format expected by Tina's GraphQL API
       res.json({
         data: {
           post: {
@@ -130,12 +132,12 @@ export function registerRoutes(app: Express): Server {
         }
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error in Tina GQL endpoint:", err);
       res.status(500).json({ error: "Failed to fetch posts" });
     }
   });
 
-  // Existing blog posts route
+  // Blog posts API
   app.get("/api/posts", async (_req, res) => {
     try {
       const postsDir = path.join(process.cwd(), "content/posts");
@@ -147,7 +149,6 @@ export function registerRoutes(app: Express): Server {
             "utf-8"
           );
           const { data, content: mdContent } = matter(content);
-
           return {
             ...data,
             body: mdContent,
@@ -159,7 +160,7 @@ export function registerRoutes(app: Express): Server {
       );
       res.json(posts.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err) {
-      console.error(err);
+      console.error("Error in posts endpoint:", err);
       res.status(500).json({ error: "Failed to load posts" });
     }
   });
