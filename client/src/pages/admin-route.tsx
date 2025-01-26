@@ -1,10 +1,14 @@
 import { useEffect } from "react";
+import { TinaProvider, TinaCMS } from "tinacms";
+import tinaConfig from "../lib/tina";
+import { TinaEditProvider } from "tinacms/dist/edit-state";
 
 export default function AdminRoute() {
-  useEffect(() => {
-    // Redirect to Tina admin interface
-    window.location.href = "/admin/index.html";
-  }, []);
-
-  return null;
+  return (
+    <div className="h-screen w-screen">
+      <TinaEditProvider>
+        <div id="tina-admin-wrapper" />
+      </TinaEditProvider>
+    </div>
+  );
 }

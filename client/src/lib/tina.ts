@@ -27,11 +27,6 @@ export default defineConfig({
         label: "Blog Posts",
         path: "content/posts",
         format: "mdx",
-        ui: {
-          filename: {
-            readonly: true,
-          },
-        },
         fields: [
           {
             type: "string",

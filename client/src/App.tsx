@@ -32,7 +32,11 @@ function Router() {
 
 function App() {
   // Create a new TinaCMS instance with our config
-  const cms = new TinaCMS(tinaConfig);
+  const cms = new TinaCMS({
+    ...tinaConfig,
+    enabled: true,
+    sidebar: true
+  });
 
   return (
     <TinaProvider cms={cms}>
