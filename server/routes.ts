@@ -27,33 +27,6 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Admin routes handling
-  const adminPath = path.resolve(process.cwd(), "admin");
-  console.log("[Admin] Base path:", adminPath);
-
-  // Serve static files from admin build
-  app.use("/admin", express.static(adminPath));
-
-  // Handle SPA routes for admin
-  app.get(["/admin", "/admin/*"], async (req, res, next) => {
-    try {
-      const indexPath = path.join(adminPath, "index.html");
-
-      // Check if the file exists
-      try {
-        await fs.access(indexPath, fs.constants.R_OK);
-      } catch (error) {
-        console.error("[Admin] index.html not found:", error);
-        return res.status(404).send("Admin interface not found. Please ensure the build process is complete.");
-      }
-
-      res.sendFile(indexPath);
-    } catch (error) {
-      console.error("[Admin] Error serving admin interface:", error);
-      next(error);
-    }
-  });
-
   // Authentication setup
   passport.use(
     new GitHubStrategy(
@@ -74,6 +47,25 @@ export function registerRoutes(app: Express): Server {
 
   passport.deserializeUser((user: any, done) => {
     done(null, user);
+  });
+
+  // Serve static files from admin build
+  const adminPath = path.resolve(process.cwd(), "admin");
+  console.log("[Admin] Serving from:", adminPath);
+
+  // Set proper Content-Type for .js files
+  app.use("/admin", express.static(adminPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    }
+  }));
+
+  // Serve the Tina admin interface
+  app.get(["/admin", "/admin/*"], (req, res) => {
+    const indexPath = path.join(adminPath, "index.html");
+    res.sendFile(indexPath);
   });
 
   // Blog posts API

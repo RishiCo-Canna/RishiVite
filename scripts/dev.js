@@ -3,63 +3,66 @@ import { build } from "@tinacms/cli";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
-import tinaConfig from "../.tina/config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-async function ensureAdminBuild() {
-  const adminPath = path.resolve(process.cwd(), "admin");
-  console.log("[Tina] Admin path:", adminPath);
-
-  // Clean existing admin build
-  await fs.rm(adminPath, { recursive: true, force: true }).catch(() => {});
-  await fs.mkdir(adminPath, { recursive: true });
-
-  try {
-    // Set required environment variables
-    process.env.TINA_PUBLIC_IS_LOCAL = "true";
-
-    console.log("[Tina] Building admin interface...");
-    await build({
-      ...tinaConfig,
-      build: {
-        ...tinaConfig.build,
-        outputFolder: adminPath,
-      },
-    });
-
-    // Verify build output
-    const files = await fs.readdir(adminPath);
-    console.log("[Tina] Build output files:", files);
-
-    const indexPath = path.join(adminPath, "index.html");
-    await fs.access(indexPath, fs.constants.R_OK);
-
-    console.log("[Tina] Admin build completed successfully");
-    return true;
-  } catch (error) {
-    console.error("[Tina] Build failed:", error);
-    return false;
-  }
-}
 
 async function init() {
   try {
     console.log("Starting development setup...");
 
-    // Ensure admin interface is built
-    const adminBuilt = await ensureAdminBuild();
-    if (!adminBuilt) {
-      throw new Error("Failed to build Tina admin interface");
-    }
+    // Set environment variables before doing anything
+    process.env.TINA_PUBLIC_IS_LOCAL = "true";
+    process.env.PUBLIC_URL = "http://localhost:5000";
 
-    console.log("Starting application server...");
+    // Run build with environment properly configured
+    await build({
+      schema: {
+        collections: [
+          {
+            name: "post",
+            label: "Posts",
+            path: "content/posts",
+            format: "mdx",
+            fields: [
+              {
+                type: "string",
+                name: "title",
+                label: "Title",
+                isTitle: true,
+                required: true,
+              },
+              {
+                type: "datetime",
+                name: "date",
+                label: "Date",
+                required: true,
+              },
+              {
+                type: "rich-text",
+                name: "body",
+                label: "Body",
+                isBody: true,
+              },
+            ],
+          },
+        ],
+      },
+      build: {
+        outputFolder: "admin",
+        publicFolder: "public",
+        basePath: "",
+      },
+      local: true,
+    });
+
+    // Start the Express server with environment properly set
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
       env: {
         ...process.env,
         TINA_PUBLIC_IS_LOCAL: "true",
+        PUBLIC_URL: "http://localhost:5000",
       },
     });
 
