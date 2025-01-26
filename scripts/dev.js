@@ -19,8 +19,9 @@ async function init() {
     await build({
       config: {
         build: {
-          outputFolder: "admin",
+          outputFolder: adminPath,
           publicFolder: "public",
+          basePath: "",
         },
         local: true,
         schema: {
@@ -67,7 +68,7 @@ async function init() {
       shell: true,
       env: {
         ...process.env,
-        TINA_PUBLIC_IS_LOCAL: "true"
+        TINA_PUBLIC_IS_LOCAL: "true",
       }
     });
 

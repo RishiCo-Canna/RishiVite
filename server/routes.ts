@@ -7,6 +7,7 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import express from "express";
 
 const SessionStore = MemoryStore(session);
 
@@ -27,37 +28,21 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.session());
 
   // Admin routes handling
+  const adminPath = path.resolve(process.cwd(), "admin");
+
+  // Serve static files from admin directory
+  app.use("/admin", express.static(adminPath));
+
+  // SPA fallback for admin routes
   app.get(["/admin", "/admin/*"], async (req, res) => {
-    const adminPath = path.resolve(process.cwd(), "admin");
-    const indexPath = path.join(adminPath, "index.html");
-
     try {
-      // Check if admin directory exists
-      await fs.access(adminPath);
-
-      // For static assets in admin directory
-      if (req.path !== "/admin" && req.path !== "/admin/") {
-        const assetPath = path.join(adminPath, req.path.replace("/admin", ""));
-        try {
-          await fs.access(assetPath);
-          return res.sendFile(assetPath);
-        } catch {
-          // If asset not found, fall back to index.html
-        }
-      }
-
-      // Serve index.html
-      try {
-        await fs.access(indexPath);
-        res.sendFile(indexPath);
-      } catch (err) {
-        res.status(500).send(
-          "Admin interface is not available. Please ensure the admin build is complete."
-        );
-      }
+      const indexPath = path.join(adminPath, "index.html");
+      await fs.access(indexPath);
+      res.sendFile(indexPath);
     } catch (err) {
+      console.error("Admin access error:", err);
       res.status(500).send(
-        "Admin directory not found. Please ensure Tina CMS is properly built."
+        "Admin interface is not available. Please ensure the admin build is complete."
       );
     }
   });
