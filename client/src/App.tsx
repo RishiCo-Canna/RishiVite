@@ -11,7 +11,11 @@ import Footer from "@/components/layout/footer";
 import { TinaProvider, TinaCMS } from "tinacms";
 import tinaConfig from "./lib/tina";
 
-const cms = new TinaCMS(tinaConfig);
+const cms = new TinaCMS({
+  ...tinaConfig,
+  enabled: true,
+  sidebar: false,
+});
 
 function Router() {
   return (
@@ -22,11 +26,9 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/blog" component={Blog} />
           <Route path="/admin-dashboard" component={Admin} />
+          {/* Admin route now just renders empty div to prevent infinite redirects */}
           <Route path="/admin">
-            {() => {
-              window.location.href = "/admin";
-              return null;
-            }}
+            {() => <div />}
           </Route>
           <Route component={NotFound} />
         </Switch>

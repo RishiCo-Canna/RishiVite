@@ -9,7 +9,7 @@ export default defineConfig({
   clientId: clientId || "",
   token: token || "",
   build: {
-    outputFolder: "admin",
+    outputFolder: "dist/public/admin",
     publicFolder: "public",
     basePath: "",
   },
@@ -19,6 +19,10 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
+  // Configure API URL for local development
+  contentApiUrlOverride: "/api/tina/gql",
+  // Disable sidebar for main app, enable it only in admin
+  sidebar: false,
   schema: {
     collections: [
       {
