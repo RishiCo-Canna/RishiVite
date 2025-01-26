@@ -8,11 +8,6 @@ export default defineConfig({
     basePath: "",
   },
   // Explicitly enable local mode
-  local: true,
-  // Remove cloud-specific config for local dev
-  clientId: undefined,
-  token: undefined,
-  branch: "",
   schema: {
     collections: [
       {
