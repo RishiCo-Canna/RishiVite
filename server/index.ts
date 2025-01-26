@@ -1,11 +1,14 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-
-// Set Vite environment variables before anything else
+// Set Vite environment variables before any imports
 process.env.VITE_DEV_SERVER_HOST = '0.0.0.0';
 process.env.VITE_DEV_SERVER_PORT = '5000';
 process.env.VITE_PUBLIC_URL = 'http://0.0.0.0:5000';
+process.env.VITE_HMR_PROTOCOL = 'ws';
+process.env.VITE_HMR_HOST = '0.0.0.0';
+process.env.BASE_URL = 'http://0.0.0.0:5000';
+
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
