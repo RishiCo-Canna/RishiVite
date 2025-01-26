@@ -35,7 +35,7 @@ export function registerRoutes(app: Express): Server {
         clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         callbackURL: "/auth/github/callback",
       },
-      function (accessToken: any, refreshToken: any, profile: any, done: any) {
+      function(accessToken: any, refreshToken: any, profile: any, done: any) {
         return done(null, profile);
       }
     )
@@ -49,23 +49,29 @@ export function registerRoutes(app: Express): Server {
     done(null, user);
   });
 
-  // Serve static files from admin build
+  // Configure admin interface serving
   const adminPath = path.resolve(process.cwd(), "admin");
   console.log("[Admin] Serving from:", adminPath);
 
-  // Set proper Content-Type for .js files
+  // Serve static files from admin build with proper content types
   app.use("/admin", express.static(adminPath, {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.js')) {
         res.setHeader('Content-Type', 'application/javascript');
+      } else if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
       }
     }
   }));
 
-  // Serve the Tina admin interface
-  app.get(["/admin", "/admin/*"], (req, res) => {
-    const indexPath = path.join(adminPath, "index.html");
-    res.sendFile(indexPath);
+  // Handle all admin routes - must come after static serving
+  app.get(["/admin", "/admin/*"], (req, res, next) => {
+    try {
+      const indexPath = path.join(adminPath, "index.html");
+      res.sendFile(indexPath);
+    } catch (error) {
+      next(error);
+    }
   });
 
   // Blog posts API

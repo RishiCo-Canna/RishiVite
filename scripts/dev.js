@@ -6,56 +6,52 @@ import fs from "fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function init() {
+async function buildTinaAdmin() {
+  const adminPath = path.resolve(process.cwd(), "admin");
+  console.log("\nPreparing Tina Admin build...");
+
+  // Clean and recreate admin directory
+  await fs.rm(adminPath, { recursive: true, force: true }).catch(() => {});
+  await fs.mkdir(adminPath, { recursive: true });
+
+  // Set required environment variables
+  process.env.TINA_PUBLIC_IS_LOCAL = "true";
+  process.env.PUBLIC_URL = "http://localhost:5000";
+
   try {
-    console.log("Starting development setup...");
-
-    // Set environment variables before doing anything
-    process.env.TINA_PUBLIC_IS_LOCAL = "true";
-    process.env.PUBLIC_URL = "http://localhost:5000";
-
-    // Run build with environment properly configured
+    console.log("Building Tina admin interface...");
     await build({
-      schema: {
-        collections: [
-          {
-            name: "post",
-            label: "Posts",
-            path: "content/posts",
-            format: "mdx",
-            fields: [
-              {
-                type: "string",
-                name: "title",
-                label: "Title",
-                isTitle: true,
-                required: true,
-              },
-              {
-                type: "datetime",
-                name: "date",
-                label: "Date",
-                required: true,
-              },
-              {
-                type: "rich-text",
-                name: "body",
-                label: "Body",
-                isBody: true,
-              },
-            ],
-          },
-        ],
-      },
       build: {
-        outputFolder: "admin",
+        outputFolder: adminPath,
         publicFolder: "public",
         basePath: "",
       },
-      local: true,
+      local: true, // Force local mode
+      clientId: process.env.TINA_CLIENT_ID, // Inject from environment
+      token: process.env.TINA_TOKEN,        // Inject from environment
     });
 
-    // Start the Express server with environment properly set
+    // Verify build output
+    const indexPath = path.join(adminPath, "index.html");
+    await fs.access(indexPath);
+    console.log("Tina admin build completed successfully!");
+    return true;
+  } catch (error) {
+    console.error("Failed to build Tina admin:", error);
+    return false;
+  }
+}
+
+async function init() {
+  try {
+    // Build Tina admin interface
+    const adminBuilt = await buildTinaAdmin();
+    if (!adminBuilt) {
+      throw new Error("Failed to build Tina admin interface");
+    }
+
+    // Start the Express server
+    console.log("\nStarting application server...");
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
@@ -66,6 +62,7 @@ async function init() {
       },
     });
 
+    // Handle process termination
     process.on("SIGTERM", () => {
       mainApp.kill();
       process.exit(0);
@@ -76,7 +73,7 @@ async function init() {
       process.exit(0);
     });
   } catch (error) {
-    console.error("Development setup failed:", error);
+    console.error("\nDevelopment setup failed:", error);
     process.exit(1);
   }
 }
