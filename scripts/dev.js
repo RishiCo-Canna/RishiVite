@@ -13,8 +13,20 @@ async function init() {
     // Set required environment variables
     process.env.TINA_PUBLIC_IS_LOCAL = "true";
 
+    // Clean existing admin build
+    const adminPath = path.resolve(process.cwd(), "admin");
+    await fs.rm(adminPath, { recursive: true, force: true }).catch(() => {});
+    await fs.mkdir(adminPath, { recursive: true });
+
     console.log("Building Tina CMS admin...");
     await build({
+      clientId: process.env.TINA_CLIENT_ID,
+      token: process.env.TINA_TOKEN,
+      build: {
+        outputFolder: "admin",
+        publicFolder: "public",
+        basePath: "",
+      },
       schema: {
         collections: [
           {
@@ -46,13 +58,6 @@ async function init() {
           },
         ],
       },
-      contentApiUrlOverride: "/api/tina/gql",
-      build: {
-        outputFolder: "admin",
-        publicFolder: "public",
-        basePath: "",
-      },
-      local: true,
     });
 
     console.log("Starting application server...");
