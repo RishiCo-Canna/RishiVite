@@ -46,6 +46,7 @@
     "@tanstack/react-query": "^5.60.5",
     "@tinacms/auth": "^1.0.10",
     "@tinacms/cli": "^1.8.1",
+    "@tinacms/toolkit": "^1.7.13",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

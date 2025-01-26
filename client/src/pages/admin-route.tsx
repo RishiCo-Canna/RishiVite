@@ -9,8 +9,14 @@ export default function AdminRoute() {
   useEffect(() => {
     const redirectToAdmin = async () => {
       try {
-        // In development, redirect to the admin path
-        window.location.href = "/admin/index.html";
+        // Get the current protocol and hostname
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = import.meta.env.DEV ? ':5000' : '';
+        const baseUrl = `${protocol}//${hostname}${port}`;
+
+        // Redirect to the admin interface
+        window.location.href = `${baseUrl}/admin/index.html`;
       } catch (error) {
         toast({
           title: "Error",

@@ -1,8 +1,6 @@
-import pkg from '@tinacms/cli';
-const { build } = pkg;
+import { build } from "@tinacms/cli";
 import { defineConfig } from "tinacms";
 
-// Configuration for building TinaCMS admin interface
 const config = defineConfig({
   build: {
     outputFolder: "admin",
@@ -43,15 +41,11 @@ const config = defineConfig({
   local: true,
 });
 
-async function buildAdmin() {
-  try {
-    console.log("Building TinaCMS admin interface...");
-    await build(config);
-    console.log("TinaCMS admin build completed successfully!");
-  } catch (error) {
-    console.error("Failed to build TinaCMS admin:", error);
-    process.exit(1);
-  }
+try {
+  console.log("Starting TinaCMS admin build...");
+  await build(config);
+  console.log("TinaCMS admin build completed successfully!");
+} catch (error) {
+  console.error("Failed to build TinaCMS admin:", error);
+  process.exit(1);
 }
-
-buildAdmin().catch(console.error);

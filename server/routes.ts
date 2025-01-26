@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import path from "path";
-import fs from "fs/promises";
+import fs from "fs";
 import matter from "gray-matter";
 
 export function registerRoutes(app: Express): Server {
@@ -21,10 +21,10 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/posts", async (req, res) => {
     try {
       const postsDir = path.join(process.cwd(), "content/posts");
-      const files = await fs.readdir(postsDir);
+      const files = await fs.promises.readdir(postsDir);
       const posts = await Promise.all(
         files.map(async (file) => {
-          const content = await fs.readFile(path.join(postsDir, file), "utf-8");
+          const content = await fs.promises.readFile(path.join(postsDir, file), "utf-8");
           const { data, content: mdContent } = matter(content);
           return {
             ...data,
@@ -40,17 +40,29 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Serve the admin interface HTML for all admin routes
-  app.get(["/admin", "/admin/*"], async (req, res) => {
-    const adminPath = path.resolve(process.cwd(), "admin/index.html");
-    try {
-      await fs.access(adminPath);
-      res.sendFile(adminPath);
-    } catch (err) {
-      res.status(404).json({ error: "Admin interface not built yet" });
+  // Serve admin interface for all admin routes
+  app.get(["/admin", "/admin/*"], (req, res, next) => {
+    const adminIndexPath = path.resolve(process.cwd(), "admin/index.html");
+    if (fs.existsSync(adminIndexPath)) {
+      res.sendFile(adminIndexPath);
+    } else {
+      next(); // Let the static middleware handle it
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Always return index.html for client routes
+  app.get("*", (req, res, next) => {
+    if (!req.url.startsWith("/api")) {
+      const clientIndexPath = path.resolve(process.cwd(), "client/index.html");
+      if (fs.existsSync(clientIndexPath)) {
+        res.sendFile(clientIndexPath);
+      } else {
+        next();
+      }
+    } else {
+      next();
+    }
+  });
+
+  return createServer(app);
 }
