@@ -1,15 +1,32 @@
-
 import { defineConfig } from "tinacms";
 
+// Configuration for local development and GitHub integration
 export default defineConfig({
-  branch: "",  // Empty for local development
-  clientId: process.env.TINA_CLIENT_ID || "",  // Will use env var if available
-  token: process.env.TINA_TOKEN || "",  // Will use env var if available
+  // GitHub configuration
+  branch: "main",  // Use main branch
+  clientId: process.env.TINA_CLIENT_ID,  // TinaCMS Client ID
+  token: process.env.GITHUB_TOKEN,      // GitHub Token for authentication
+
   build: {
     outputFolder: "admin",
     publicFolder: "public",
     basePath: "",
   },
+
+  // Configure API endpoint
+  apiURL: process.env.NODE_ENV === 'development' 
+    ? 'http://0.0.0.0:5000/api/tina/gql'
+    : '/api/tina/gql',
+
+  // Media configuration
+  media: {
+    tina: {
+      publicFolder: "public",
+      mediaRoot: "uploads",
+    },
+  },
+
+  // Content configuration
   schema: {
     collections: [
       {
@@ -41,12 +58,4 @@ export default defineConfig({
       },
     ],
   },
-  media: {
-    tina: {
-      publicFolder: "public",
-      mediaRoot: "uploads",
-    },
-  },
-  // Enable local mode for development
-  local: true,
 });

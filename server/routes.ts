@@ -8,6 +8,8 @@ import matter from "gray-matter";
 export function registerRoutes(app: Express): Server {
   // Serve static files from public directory
   app.use(express.static(path.resolve(process.cwd(), "public")));
+
+  // Serve the admin interface
   app.use("/admin", express.static(path.resolve(process.cwd(), "admin")));
 
   // Mock Tina GraphQL API for local development
@@ -39,8 +41,14 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Serve the admin interface HTML for all admin routes
-  app.get(["/admin", "/admin/*"], (req, res) => {
-    res.sendFile(path.resolve(process.cwd(), "admin/index.html"));
+  app.get(["/admin", "/admin/*"], async (req, res) => {
+    const adminPath = path.resolve(process.cwd(), "admin/index.html");
+    try {
+      await fs.access(adminPath);
+      res.sendFile(adminPath);
+    } catch (err) {
+      res.status(404).json({ error: "Admin interface not built yet" });
+    }
   });
 
   const httpServer = createServer(app);
