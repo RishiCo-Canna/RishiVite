@@ -29,24 +29,28 @@ export function registerRoutes(app: Express): Server {
 
   // Admin routes handling
   const adminPath = path.resolve(process.cwd(), "admin");
-  console.log("[Admin] Serving from path:", adminPath);
+  console.log("[Admin] Base path:", adminPath);
 
-  // First serve static files
+  // Serve static files from admin build
   app.use("/admin", express.static(adminPath));
 
-  // Then handle SPA routes
-  app.get(["/admin", "/admin/*"], async (req, res) => {
+  // Handle SPA routes for admin
+  app.get(["/admin", "/admin/*"], async (req, res, next) => {
     try {
       const indexPath = path.join(adminPath, "index.html");
-      console.log("[Admin] Attempting to serve:", indexPath);
 
-      // Verify the file exists before sending
-      await fs.access(indexPath);
-      console.log("[Admin] Found index.html, serving...");
+      // Check if the file exists
+      try {
+        await fs.access(indexPath, fs.constants.R_OK);
+      } catch (error) {
+        console.error("[Admin] index.html not found:", error);
+        return res.status(404).send("Admin interface not found. Please ensure the build process is complete.");
+      }
+
       res.sendFile(indexPath);
-    } catch (err) {
-      console.error("[Admin] Failed to serve admin interface:", err);
-      res.status(500).send("Admin interface is not available. The build process may be incomplete.");
+    } catch (error) {
+      console.error("[Admin] Error serving admin interface:", error);
+      next(error);
     }
   });
 
@@ -90,7 +94,7 @@ export function registerRoutes(app: Express): Server {
       );
       res.json(posts);
     } catch (err) {
-      console.error("Error loading posts:", err);
+      console.error("[API] Error loading posts:", err);
       res.status(500).json({ error: "Failed to load posts" });
     }
   });
