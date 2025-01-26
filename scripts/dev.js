@@ -10,13 +10,12 @@ async function init() {
   try {
     console.log("Starting development setup...");
 
-    // Ensure public directory exists
-    const publicDir = path.resolve(process.cwd(), "public");
-    await fs.mkdir(publicDir, { recursive: true });
-    await fs.mkdir(path.resolve(publicDir, "admin"), { recursive: true });
+    // Ensure directories exist
+    const adminDir = path.resolve(process.cwd(), "admin");
+    await fs.mkdir(adminDir, { recursive: true });
 
     // Clean existing admin build
-    await fs.rm(path.resolve(publicDir, "admin"), { recursive: true, force: true }).catch(() => {});
+    await fs.rm(adminDir, { recursive: true, force: true }).catch(() => {});
 
     // Set environment for local development
     process.env.TINA_PUBLIC_IS_LOCAL = "true";
@@ -56,7 +55,7 @@ async function init() {
         ],
       },
       build: {
-        outputFolder: "public/admin",
+        outputFolder: "admin",
         publicFolder: "public",
         basePath: "",
       },
