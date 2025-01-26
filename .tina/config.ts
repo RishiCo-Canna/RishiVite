@@ -1,12 +1,17 @@
+
 import { defineConfig } from "tinacms";
 
-// Configuration for local development
 export default defineConfig({
+  branch: "", // Empty for local development
+  clientId: process.env.TINA_CLIENT_ID || "dummy-development-id",
+  token: process.env.TINA_TOKEN || "dummy-development-token",
   build: {
-    outputFolder: "public/admin",  // Build directly into public/admin
+    outputFolder: "public/admin",
     publicFolder: "public",
-    basePath: "admin",  // Ensure URLs are prefixed with /admin
+    basePath: "admin",
   },
+  // Enable local mode for development
+  local: true,
   schema: {
     collections: [
       {
