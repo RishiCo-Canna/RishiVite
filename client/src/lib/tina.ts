@@ -19,9 +19,6 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
-  // Enable local mode for development
-  local: true,
-  // Configure API URL for local development
   contentApiUrlOverride: "/api/tina/gql",
   schema: {
     collections: [
@@ -33,9 +30,6 @@ export default defineConfig({
         ui: {
           filename: {
             readonly: true,
-            slugify: (values) => {
-              return `${values?.title?.toLowerCase().replace(/ /g, '-')}`;
-            },
           },
         },
         fields: [
@@ -57,24 +51,6 @@ export default defineConfig({
             name: "body",
             label: "Body",
             isBody: true,
-            templates: [
-              {
-                name: "Image",
-                label: "Image",
-                fields: [
-                  {
-                    name: "src",
-                    label: "Image Source",
-                    type: "image",
-                  },
-                  {
-                    name: "alt",
-                    label: "Alt Text",
-                    type: "string",
-                  },
-                ],
-              },
-            ],
           },
         ],
       },
@@ -83,14 +59,6 @@ export default defineConfig({
         label: "Pages",
         path: "content/pages",
         format: "mdx",
-        ui: {
-          filename: {
-            readonly: true,
-            slugify: (values) => {
-              return `${values?.title?.toLowerCase().replace(/ /g, '-')}`;
-            },
-          },
-        },
         fields: [
           {
             type: "string",
@@ -109,53 +77,6 @@ export default defineConfig({
             name: "body",
             label: "Body",
             isBody: true,
-            templates: [
-              {
-                name: "Hero",
-                label: "Hero Section",
-                fields: [
-                  {
-                    name: "heading",
-                    label: "Heading",
-                    type: "string",
-                  },
-                  {
-                    name: "subheading",
-                    label: "Sub Heading",
-                    type: "string",
-                  },
-                  {
-                    name: "backgroundImage",
-                    label: "Background Image",
-                    type: "image",
-                  },
-                ],
-              },
-              {
-                name: "Features",
-                label: "Features List",
-                fields: [
-                  {
-                    name: "items",
-                    label: "Feature Items",
-                    type: "object",
-                    list: true,
-                    fields: [
-                      {
-                        name: "title",
-                        label: "Title",
-                        type: "string",
-                      },
-                      {
-                        name: "description",
-                        label: "Description",
-                        type: "string",
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
           },
         ],
       },

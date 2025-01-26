@@ -6,16 +6,11 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Blog from "@/pages/blog";
 import Admin from "@/pages/admin";
+import AdminRoute from "@/pages/admin-route";
 import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
 import { TinaProvider, TinaCMS } from "tinacms";
 import tinaConfig from "./lib/tina";
-
-const cms = new TinaCMS({
-  ...tinaConfig,
-  enabled: true,
-  sidebar: false,
-});
 
 function Router() {
   return (
@@ -26,10 +21,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/blog" component={Blog} />
           <Route path="/admin-dashboard" component={Admin} />
-          {/* Admin route now just renders empty div to prevent infinite redirects */}
-          <Route path="/admin">
-            {() => <div />}
-          </Route>
+          <Route path="/admin" component={AdminRoute} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -39,6 +31,9 @@ function Router() {
 }
 
 function App() {
+  // Create a new TinaCMS instance with our config
+  const cms = new TinaCMS(tinaConfig);
+
   return (
     <TinaProvider cms={cms}>
       <QueryClientProvider client={queryClient}>
