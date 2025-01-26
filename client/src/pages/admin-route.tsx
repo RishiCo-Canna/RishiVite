@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { TinaProvider, TinaCMS } from "tinacms";
 import tinaConfig from "../lib/tina";
-import { TinaEditProvider } from "tinacms/dist/edit-state";
+import { TinaEditProvider } from "tinacms";
 
 export default function AdminRoute() {
   return (
