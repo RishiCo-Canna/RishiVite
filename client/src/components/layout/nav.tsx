@@ -9,7 +9,9 @@ export default function Nav() {
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
           <Link href="/">
-            <a className="text-xl font-bold">TinaSite</a>
+            <Button variant="link" className="text-xl font-bold p-0">
+              TinaSite
+            </Button>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -23,13 +25,18 @@ export default function Nav() {
                 Blog
               </Button>
             </Link>
-            <a
-              href="/admin"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              variant="outline"
+              asChild
             >
-              <Button variant="outline">Admin</Button>
-            </a>
+              <a
+                href="/admin"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Admin
+              </a>
+            </Button>
           </div>
         </nav>
       </div>
