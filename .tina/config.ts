@@ -1,10 +1,21 @@
 import { defineConfig } from "tinacms";
 
 export default defineConfig({
+  branch: "",
+  clientId: process.env.TINA_CLIENT_ID || "", // Get from env
+  token: process.env.TINA_TOKEN || "",       // Get from env
   build: {
     outputFolder: "admin",
     publicFolder: "public",
   },
+  media: {
+    tina: {
+      publicFolder: "public",
+      mediaRoot: "uploads",
+    },
+  },
+  // Enable local mode for development
+  local: true,
   schema: {
     collections: [
       {

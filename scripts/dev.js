@@ -1,52 +1,26 @@
 import { spawn } from "child_process";
 import { createServer } from "@tinacms/cli";
-import { defineConfig } from "tinacms";
+import config from "../.tina/config.js";
+import fs from 'fs/promises';
 
 async function startDev() {
   try {
     console.log("Starting TinaCMS development server...");
-    const tinaConfig = defineConfig({
-      build: {
-        outputFolder: "admin",
-        publicFolder: "public",
-      },
-      schema: {
-        collections: [
-          {
-            name: "post",
-            label: "Posts",
-            path: "content/posts",
-            format: "mdx",
-            fields: [
-              {
-                type: "string",
-                name: "title",
-                label: "Title",
-                isTitle: true,
-                required: true,
-              },
-              {
-                type: "datetime",
-                name: "date",
-                label: "Date",
-                required: true,
-              },
-              {
-                type: "rich-text",
-                name: "body",
-                label: "Body",
-                isBody: true,
-              },
-            ],
-          },
-        ],
-      },
-    });
 
-    // Start TinaCMS server
+    // Ensure content directories exist
+    const contentDir = "./content/posts";
+    const uploadsDir = "./public/uploads";
+    await Promise.all([
+      fs.mkdir(contentDir, { recursive: true }),
+      fs.mkdir(uploadsDir, { recursive: true }),
+    ]);
+
+    // Start TinaCMS server with local configuration
     const tinaServer = await createServer({
-      ...tinaConfig,
+      ...config,
       port: 5001,
+      publicFolder: "public",
+      contentApiUrlOverride: "/api/tina/gql",
     });
 
     console.log("Starting Express server...");
@@ -56,6 +30,7 @@ async function startDev() {
       env: {
         ...process.env,
         NODE_ENV: "development",
+        TINA_PUBLIC_IS_LOCAL: "true",
       },
     });
 

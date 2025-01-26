@@ -33,26 +33,31 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Handle admin routes
+  // TinaCMS Admin routes
   if (process.env.NODE_ENV === 'development') {
-    // Create proxy for TinaCMS admin
-    const adminProxy = createProxyMiddleware({
+    // Create proxy for TinaCMS admin in development
+    app.use('/admin', createProxyMiddleware({
       target: 'http://localhost:5001',
       changeOrigin: true,
       ws: true,
+      logLevel: 'debug',
       onProxyReq: (proxyReq, req, res) => {
-        // Log proxy requests for debugging
-        console.log(`[Proxy] ${req.method} ${req.url} -> http://localhost:5001${req.url}`);
+        console.log(`[TinaCMS Proxy] ${req.method} ${req.url}`);
       },
-    });
-
-    // Mount proxy middleware
-    app.use('/admin', adminProxy);
+      onError: (err, req, res) => {
+        console.error('[TinaCMS Proxy] Error:', err);
+        res.writeHead(500, {
+          'Content-Type': 'text/plain'
+        });
+        res.end('Something went wrong with the TinaCMS proxy. Is the TinaCMS server running?');
+      }
+    }));
   } else {
-    // Serve static admin files in production
-    app.use('/admin', express.static(path.join(process.cwd(), 'public', 'admin')));
+    // Serve built admin files in production
+    const adminPath = path.join(process.cwd(), 'public', 'admin');
+    app.use('/admin', express.static(adminPath));
     app.get('/admin/*', (req, res) => {
-      res.sendFile(path.join(process.cwd(), 'public', 'admin', 'index.html'));
+      res.sendFile(path.join(adminPath, 'index.html'));
     });
   }
 
