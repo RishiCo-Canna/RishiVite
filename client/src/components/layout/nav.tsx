@@ -30,7 +30,7 @@ export default function Nav() {
               asChild
             >
               <a
-                href="/admin"
+                href="/admin/index.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
