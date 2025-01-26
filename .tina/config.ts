@@ -1,6 +1,12 @@
 import { defineConfig } from "tinacms";
 
+// Configuration for local development
 export default defineConfig({
+  build: {
+    publicFolder: "public",
+    outputFolder: "admin", // Build directly into admin folder for simpler serving
+    basePath: "",
+  },
   schema: {
     collections: [
       {
@@ -32,10 +38,10 @@ export default defineConfig({
       },
     ],
   },
-  build: {
-    publicFolder: "public",
-    outputFolder: "public/admin",
-    basePath: "admin",
+  media: {
+    tina: {
+      publicFolder: "public",
+      mediaRoot: "uploads",
+    },
   },
-  contentApiUrlOverride: '/api/tina/gql', 
 });

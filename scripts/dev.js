@@ -13,14 +13,14 @@ async function init() {
     // Ensure public directory exists
     const publicDir = path.resolve(process.cwd(), "public");
     await fs.mkdir(publicDir, { recursive: true });
+    await fs.mkdir(path.resolve(publicDir, "admin"), { recursive: true });
 
     // Clean existing admin build
     await fs.rm(path.resolve(publicDir, "admin"), { recursive: true, force: true }).catch(() => {});
 
-    // Set required environment variables
+    // Set environment for local development
     process.env.TINA_PUBLIC_IS_LOCAL = "true";
     process.env.PUBLIC_URL = "http://localhost:5000";
-    process.env.NEXT_PUBLIC_TINA_CLIENT_ID = process.env.TINA_CLIENT_ID;
 
     console.log("Building Tina admin interface...");
     await build({
@@ -58,20 +58,18 @@ async function init() {
       build: {
         outputFolder: "public/admin",
         publicFolder: "public",
-        basePath: "admin",
+        basePath: "",
       },
-      contentApiUrlOverride: '/api/tina/gql',
       local: true,
     });
 
-    // Start the Express server with environment properly set
+    // Start the Express server
     const mainApp = spawn("tsx", ["server/index.ts"], {
       stdio: "inherit",
       shell: true,
       env: {
         ...process.env,
         TINA_PUBLIC_IS_LOCAL: "true",
-        PUBLIC_URL: "http://localhost:5000",
       },
     });
 
