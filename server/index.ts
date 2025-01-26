@@ -2,6 +2,11 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Set Vite environment variables before anything else
+process.env.VITE_DEV_SERVER_HOST = '0.0.0.0';
+process.env.VITE_DEV_SERVER_PORT = '5000';
+process.env.VITE_PUBLIC_URL = 'http://0.0.0.0:5000';
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -61,10 +66,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Set environment variables for Vite
-  process.env.VITE_DEV_SERVER_HOST = '0.0.0.0';
-  process.env.VITE_DEV_SERVER_PORT = '5000';
-
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
@@ -73,6 +74,6 @@ app.use((req, res, next) => {
 
   const PORT = 5000;
   server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
+    log(`Server running at http://0.0.0.0:${PORT}`);
   });
 })();
