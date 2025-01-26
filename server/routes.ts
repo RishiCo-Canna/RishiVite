@@ -29,23 +29,24 @@ export function registerRoutes(app: Express): Server {
 
   // Admin routes handling
   const adminPath = path.resolve(process.cwd(), "admin");
+  console.log("[Admin] Serving from path:", adminPath);
 
   // First serve static files
-  console.log("Serving admin static files from:", adminPath);
   app.use("/admin", express.static(adminPath));
 
   // Then handle SPA routes
   app.get(["/admin", "/admin/*"], async (req, res) => {
     try {
       const indexPath = path.join(adminPath, "index.html");
+      console.log("[Admin] Attempting to serve:", indexPath);
+
       // Verify the file exists before sending
       await fs.access(indexPath);
+      console.log("[Admin] Found index.html, serving...");
       res.sendFile(indexPath);
     } catch (err) {
-      console.error("Admin access error:", err);
-      res.status(500).send(
-        "Admin interface is not available. Please ensure the admin build is complete."
-      );
+      console.error("[Admin] Failed to serve admin interface:", err);
+      res.status(500).send("Admin interface is not available. The build process may be incomplete.");
     }
   });
 
