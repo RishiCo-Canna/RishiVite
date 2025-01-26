@@ -27,43 +27,56 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Dynamic callback URL based on request
-  app.use((req, _res, next) => {
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const baseUrl = `${protocol}://${host}`;
-
-    // Configure GitHub strategy with dynamic callback URL
-    passport.use(
-      new GitHubStrategy(
-        {
-          clientID: process.env.GITHUB_CLIENT_ID!,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-          callbackURL: `${baseUrl}/auth/github/callback`,
-        },
-        function (accessToken, refreshToken, profile, done) {
-          // For testing, we'll just pass the profile through
-          return done(null, profile);
-        }
-      )
-    );
+  // Base URL middleware - must come before passport strategy setup
+  app.use((req, res, next) => {
+    const protocol = req.headers["x-forwarded-proto"] || "http";
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
+    req.baseUrl = `${protocol}://${host}`;
     next();
   });
+
+  // Configure GitHub strategy with dynamic callback URL
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID!,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        callbackURL: "/auth/github/callback",
+        proxy: true
+      },
+      function (accessToken: any, refreshToken: any, profile: any, done: any) {
+        // For testing, we'll just pass the profile through
+        return done(null, profile);
+      }
+    )
+  );
 
   passport.serializeUser((user, done) => {
     done(null, user);
   });
 
-  passport.deserializeUser((user, done) => {
+  passport.deserializeUser((user: any, done) => {
     done(null, user);
   });
 
   // Test authentication routes
-  app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+  app.get("/auth/github", (req, res, next) => {
+    const authOptions = {
+      scope: ["user:email"],
+      callbackURL: `${req.baseUrl}/auth/github/callback`
+    };
+    passport.authenticate("github", authOptions)(req, res, next);
+  });
 
   app.get(
     "/auth/github/callback",
-    passport.authenticate("github", { failureRedirect: "/login" }),
+    (req, res, next) => {
+      const authOptions = {
+        failureRedirect: "/login",
+        callbackURL: `${req.baseUrl}/auth/github/callback`
+      };
+      passport.authenticate("github", authOptions)(req, res, next);
+    },
     function (req, res) {
       res.redirect("/auth/test");
     }
