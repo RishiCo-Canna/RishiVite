@@ -53,7 +53,7 @@ export function registerRoutes(app: Express): Server {
     if (fs.existsSync(adminIndexPath)) {
       res.sendFile(adminIndexPath);
     } else {
-      res.status(404).send("Admin interface not built. Run `npm run build:admin` first.");
+      res.status(404).send("Admin interface not built. Please wait while we build it...");
     }
   });
 
