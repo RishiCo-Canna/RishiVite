@@ -7,10 +7,9 @@ export default defineConfig({
   },
   // Explicitly set local mode
   local: true,
-  contentApiUrlOverride: null,
-  // Disable cloud features
-  clientId: null,
-  token: null,
+  // Remove cloud features
+  clientId: undefined,
+  token: undefined,
   branch: "",
   schema: {
     collections: [

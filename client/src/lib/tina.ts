@@ -1,25 +1,14 @@
 import { defineConfig } from "tinacms";
 
-// Ensure we're using environment variables correctly for Vite
-const clientId = import.meta.env.VITE_TINA_CLIENT_ID;
-const token = import.meta.env.VITE_TINA_TOKEN;
-
+// Local development configuration only
 export default defineConfig({
-  branch: "main",
-  clientId: clientId || "",
-  token: token || "",
   build: {
     outputFolder: "admin",
     publicFolder: "public",
     basePath: "",
   },
-  media: {
-    tina: {
-      mediaRoot: "uploads",
-      publicFolder: "public",
-    },
-  },
-  contentApiUrlOverride: "/api/tina/gql",
+  // Local mode settings
+  local: true,
   schema: {
     collections: [
       {

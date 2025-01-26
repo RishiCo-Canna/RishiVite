@@ -9,23 +9,8 @@ export default function AdminRoute() {
   useEffect(() => {
     const redirectToAdmin = async () => {
       try {
-        if (import.meta.env.DEV) {
-          // In development, check if Tina admin server is running
-          const response = await fetch("http://localhost:5001/admin");
-          if (response.ok) {
-            window.location.href = "http://localhost:5001/admin";
-          } else {
-            throw new Error("Tina admin server is not running");
-          }
-        } else {
-          // In production, use the built admin interface
-          const response = await fetch("/admin/index.html");
-          if (response.ok) {
-            window.location.href = "/admin/index.html";
-          } else {
-            throw new Error("Admin interface not found");
-          }
-        }
+        // In development, redirect to the admin path
+        window.location.href = "/admin/index.html";
       } catch (error) {
         toast({
           title: "Error",
